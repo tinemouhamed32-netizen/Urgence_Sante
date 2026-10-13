@@ -6,6 +6,4 @@ __pycache__/
 *.db
 *.db-shm
 *.db-wal
-*.db-wal
-*.db-shm
 *.db-journal
