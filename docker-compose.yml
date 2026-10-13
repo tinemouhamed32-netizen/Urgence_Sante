@@ -1,0 +1,10 @@
+services:
+  urgence-sante:
+    build: .
+    container_name: urgence-sante
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: development
+      APP_DEBUG: true
+      DEFAULT_COUNTRY: SN

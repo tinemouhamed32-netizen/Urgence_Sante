@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: urgence-sante-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.12.8
+  - type: web
+    name: urgence-sante-ui
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run streamlit_app.py --server.address 0.0.0.0 --server.port $PORT
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: urgence-sante-api
+          property: host
+      - key: PYTHON_VERSION
+        value: 3.12.8

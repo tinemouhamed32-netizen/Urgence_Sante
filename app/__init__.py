@@ -1,0 +1,1 @@
+"""Urgence Santé application package."""
