@@ -4,3 +4,8 @@ __pycache__/
 .env
 *.pyc
 *.db
+*.db-shm
+*.db-wal
+*.db-wal
+*.db-shm
+*.db-journal
