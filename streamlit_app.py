@@ -624,7 +624,6 @@ with medication_tab:
     uploaded = st.file_uploader(
         "Choisir une image de boîte ou de notice",
         type=["jpg", "jpeg", "png", "webp"],
-        max_upload_size=5,
         help="Image de démonstration uniquement · 5 Mo maximum.",
     )
     if uploaded is not None:
