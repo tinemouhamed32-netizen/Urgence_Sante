@@ -105,14 +105,14 @@ class EmergencyEngine:
             session.step = "immediate_alert"
             session.status = "requires_immediate_help"
             session.next_question = None
-            session.guidance = "Contactez immédiatement les secours et poursuivez les gestes de base selon le protocole validé disponible hors ligne."
+            session.guidance = "Ce scénario fictif ne fournit pas de protocole de premiers secours validé. En situation réelle, contactez immédiatement les services de secours locaux."
             self._persist_session(session)
             return session
         if normalized in {"non", "no", "n"} and session.step == "triage":
             session.step = "monitoring"
             session.status = "monitoring"
             session.next_question = "Le patient est-il stable et conscient ?"
-            session.guidance = "Continuer la surveillance et demander une évaluation médicale si le symptôme persiste."
+            session.guidance = "Cette simulation ne permet pas d'évaluer une situation réelle. En cas de doute ou d'aggravation, contactez les services de secours locaux."
             self._persist_session(session)
             return session
         if session.step == "immediate_alert":
@@ -124,7 +124,7 @@ class EmergencyEngine:
         if session.step == "monitoring":
             session.status = "resolved"
             session.next_question = None
-            session.guidance = "Le cas est surveillé. Si la situation évolue, contactez un professionnel de santé."
+            session.guidance = "Fin de la simulation. Ce résultat ne détermine pas l'état réel d'une personne ; demandez un avis professionnel si nécessaire."
             self._persist_session(session)
             return session
         session.status = "resolved"

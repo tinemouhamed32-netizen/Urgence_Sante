@@ -67,6 +67,8 @@ streamlit run streamlit_app.py --server.port 8501
 
 L'interface Streamlit sera disponible sur http://127.0.0.1:8501.
 
+L'interface utilise le backend défini par `BACKEND_URL` (par défaut `http://127.0.0.1:8000`). Pour héberger l'interface et l'API séparément, définissez cette variable avec l'URL publique complète de l'API. Les outils principaux sont accessibles depuis les onglets **Assistant**, **Fiches santé**, **Parcours d'urgence** et **Médicament · simulation**.
+
 ## Déploiement public gratuit sur Render
 
 Le fichier `render.yaml` décrit deux services Render (API FastAPI et interface Streamlit). Pour créer les URL publiques :
@@ -76,7 +78,15 @@ Le fichier `render.yaml` décrit deux services Render (API FastAPI et interface 
 3. Approuver la création des deux services gratuits `urgence-sante-api` et `urgence-sante-ui`.
 4. Ouvrir l'URL publique du service `urgence-sante-ui`. Son adresse est affichée dans le tableau de bord Render.
 
-L'API est configurée avec un endpoint de vérification (`/health`), et l'interface récupère automatiquement le nom d'hôte de l'API. Les services gratuits peuvent se mettre en veille après une période d'inactivité et le premier accès peut prendre quelques instants. Leur système de fichiers n'est pas persistant : la base SQLite et les sessions de démonstration peuvent être réinitialisées lors d'un redéploiement ou d'un redémarrage du service. Ne pas y stocker de données de santé réelles.
+L'API est configurée avec un endpoint de vérification (`/health`), et l'interface récupère automatiquement le nom d'hôte de l'API. Les services gratuits peuvent se mettre en veille après une période d'inactivité ; le premier appel peut prendre jusqu'à une minute. Leur système de fichiers n'est pas persistant : la base SQLite et les sessions de démonstration peuvent être réinitialisées lors d'un redéploiement ou d'un redémarrage du service. Ne pas y stocker de données de santé réelles.
+
+## Périmètre fonctionnel et sécurité d'usage
+
+- Les questions et recherches sont traitées par le backend et limitées au corpus de démonstration disponible.
+- Le parcours d'urgence est une simulation technique, pas un outil de triage médical validé. En cas d'urgence réelle, contactez les services de secours locaux.
+- Le parcours médicament ne réalise pas d'OCR : l'image n'est pas envoyée au backend et les candidats retournés sont fictifs. Ne l'utilisez pas pour identifier un produit, choisir un traitement ou déterminer une dose.
+- N'entrez aucune donnée de santé réelle ou information permettant d'identifier une personne. Ce prototype n'est pas conçu ni certifié pour une prise en charge médicale.
+- Avant tout usage réel, il faut notamment faire valider les contenus par des professionnels de santé, intégrer des sources officiellement maintenues, établir les exigences de confidentialité et de sécurité applicables et remplacer les simulations par des services évalués.
 
 ## Tests rapides
 

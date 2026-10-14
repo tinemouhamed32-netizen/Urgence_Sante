@@ -32,7 +32,7 @@ class AIOrchestrator:
             session = self.emergency_engine.start_session(country=normalized_country, language=normalized_language)
             return {
                 "category": "emergency",
-                "answer": "Le système a détecté un contexte d'urgence. Une évaluation structurée doit être menée avec un parcours prévalidé hors ligne.",
+                "answer": "Cette démonstration ne réalise pas de triage médical. En cas de situation réelle, contactez immédiatement les services de secours locaux.",
                 "sources": ["Protocoles de démonstration fictifs"],
                 "limitations": ["Ce n'est pas un diagnostic médical et les données sont fictives."],
                 "session": {
