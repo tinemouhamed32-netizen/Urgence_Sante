@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import math
+import re
+import unicodedata
+
 from app.core.security import normalize_country, normalize_language, sanitize_text
 from app.database.models import HealthArticleRecord
 from app.database.session import SessionLocal, normalize_db_value
@@ -8,8 +12,47 @@ from app.models.health_article import HealthArticle
 
 
 class HealthRepository:
+    _STOP_WORDS = {
+        "alors", "au", "aucun", "aucune", "aussi", "autre", "aux", "avec", "avoir", "bon",
+        "car", "ce", "cela", "ces", "comme", "comment", "dans", "de", "des", "du", "elle",
+        "en", "et", "eux", "faire", "il", "ils", "je", "la", "le", "les", "leur", "lui",
+        "ma", "mais", "me", "meme", "mes", "moi", "mon", "ne", "nos", "notre", "nous",
+        "on", "ou", "par", "pas", "pour", "quand", "que", "quel", "quelle", "quels",
+        "qui", "sa", "sans", "se", "ses", "son", "sous", "sur", "ta", "te", "tes", "toi",
+        "ton", "tout", "tous", "tu", "un", "une", "vos", "votre", "vous", "y",
+    }
+    _CONCEPTS = {
+        "hydratation": {"bois", "boire", "eau", "deshydrate", "deshydratation", "hydrate", "hydratation"},
+        "sommeil": {"dors", "dormir", "dort", "endormir", "insomnie", "repos", "sommeil"},
+        "chaleur": {"chaud", "chaude", "chaleur"},
+    }
+
     def __init__(self, articles: list[HealthArticle] | None = None) -> None:
         self.articles = list(articles or [])
+
+    @classmethod
+    def _search_terms(cls, text: str) -> set[str]:
+        normalized = unicodedata.normalize("NFKD", text.casefold())
+        ascii_text = normalized.encode("ascii", "ignore").decode("ascii")
+        return {
+            token
+            for token in re.findall(r"[a-z0-9]+", ascii_text)
+            if len(token) > 1 and token not in cls._STOP_WORDS
+        }
+
+    @classmethod
+    def _search_concepts(cls, text: str) -> set[str]:
+        terms = cls._search_terms(text)
+        concepts = {alias: concept for concept, aliases in cls._CONCEPTS.items() for alias in aliases}
+        return {concepts.get(term, term) for term in terms}
+
+    @classmethod
+    def _search_score(cls, query: str, article: HealthArticleDTO) -> int:
+        query_concepts = cls._search_concepts(query)
+        article_text = f"{article.title} {article.category} {article.content}"
+        matching_concepts = query_concepts & cls._search_concepts(article_text)
+        minimum_matches = max(1, math.ceil(len(query_concepts) * 0.25))
+        return len(matching_concepts) if len(matching_concepts) >= minimum_matches else 0
 
     @staticmethod
     def _dto_from_model(article: HealthArticle) -> HealthArticleDTO:
@@ -111,7 +154,6 @@ class HealthRepository:
         if not cleaned_query:
             return []
 
-        low = cleaned_query.lower()
         db = SessionLocal()
         try:
             rows = db.query(HealthArticleRecord).all()
@@ -122,18 +164,29 @@ class HealthRepository:
         for row in rows:
             article = self._dto_from_record(row)
             if self._matches_country(article, country) and self._matches_language(article, language):
-                if low in article.title.lower() or low in article.content.lower() or low in article.category.lower():
+                if self._search_score(cleaned_query, article):
                     results.append(article)
         if results:
-            return results
+            return sorted(
+                results,
+                key=lambda article: self._search_score(cleaned_query, article),
+                reverse=True,
+            )
 
-        return [
-            self._dto_from_model(article)
-            for article in self.articles
-            if self._matches_country(self._dto_from_model(article), country)
-            and self._matches_language(self._dto_from_model(article), language)
-            and (low in article.title.lower() or low in article.content.lower() or low in article.category.lower())
-        ]
+        fallback_results = []
+        for article in self.articles:
+            dto = self._dto_from_model(article)
+            if (
+                self._matches_country(dto, country)
+                and self._matches_language(dto, language)
+                and self._search_score(cleaned_query, dto)
+            ):
+                fallback_results.append(dto)
+        return sorted(
+            fallback_results,
+            key=lambda article: self._search_score(cleaned_query, article),
+            reverse=True,
+        )
 
     def get_all(self) -> list[HealthArticleDTO]:
         db = SessionLocal()

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from datetime import date
-
 from app.core.security import normalize_country, normalize_language, sanitize_text
 from app.database.session import init_db
 from app.models.health_article import HealthArticle
@@ -19,14 +17,14 @@ class HealthKnowledgeBase:
                 content="Boire de l'eau régulièrement et ajuster l'apport selon la chaleur et l'activité physique. Ne pas remplacer les conseils médicaux par des régimes personnalisés.",
                 country="SN",
                 language="fr",
-                source_name="Ministère de la Santé du Sénégal",
-                source_url="https://sante.gouv.sn",
-                publication_date=date(2024, 1, 15),
-                last_verified=date(2024, 12, 1),
-                reviewer="Service santé publique",
-                status="validated",
+                source_name="Contenu de démonstration non référencé",
+                source_url=None,
+                publication_date=None,
+                last_verified=None,
+                reviewer=None,
+                status="demo_only",
                 version="1.0",
-                next_revision=date(2025, 12, 1),
+                next_revision=None,
                 is_demo=True,
             ),
             HealthArticle(
@@ -36,14 +34,14 @@ class HealthKnowledgeBase:
                 content="Un sommeil régulier et une réduction du stress favorisent la récupération. Les conseils sont généraux et non thérapeutiques.",
                 country="SN",
                 language="fr",
-                source_name="OMS",
-                source_url="https://www.who.int",
-                publication_date=date(2023, 10, 20),
-                last_verified=date(2024, 8, 1),
-                reviewer="OMS",
-                status="validated",
+                source_name="Contenu de démonstration non référencé",
+                source_url=None,
+                publication_date=None,
+                last_verified=None,
+                reviewer=None,
+                status="demo_only",
                 version="1.0",
-                next_revision=date(2025, 8, 1),
+                next_revision=None,
                 is_demo=True,
             ),
         ])

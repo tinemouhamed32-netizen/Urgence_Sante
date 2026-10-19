@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from html import escape
 from typing import Any
+from urllib.parse import urlsplit
 
 import requests
 import streamlit as st
@@ -483,6 +484,20 @@ with assistant_tab:
         label = "Vous" if role == "user" else "Assistant"
         text = escape(message["text"]).replace("\n", "<br>")
         st.markdown(f"<div class='{bubble_class}'><strong>{label}</strong><br>{text}</div>", unsafe_allow_html=True)
+        sources = message.get("sources", [])
+        if sources:
+            st.caption("Sources :")
+            for source in sources:
+                title, separator, url = source.partition(" | ")
+                parsed_url = urlsplit(url) if separator else None
+                if (
+                    parsed_url
+                    and parsed_url.scheme == "https"
+                    and parsed_url.hostname in {"sja.org.uk", "www.sja.org.uk", "samu.sn", "www.samu.sn"}
+                ):
+                    st.markdown(f"- [{escape(title)}]({url})")
+                else:
+                    st.markdown(f"- {escape(source)}")
 
     with st.form("chat_form", clear_on_submit=True):
         user_input = st.text_input("Votre message", placeholder="Posez une question de santé générale ...")
@@ -497,14 +512,14 @@ with assistant_tab:
                 payload={"question": user_input.strip(), "country": "SN", "language": "fr"},
             )
             reply = data.get("answer", "Aucune réponse disponible.")
-            sources = ", ".join(data.get("sources", [])) or "Aucune source listée."
             limitations = "; ".join(data.get("limitations", [])) or "Aucune limite précisée."
-            assistant_reply = f"{reply}\n\nSources : {sources}\nLimites : {limitations}"
-            if data.get("category") == "emergency":
-                assistant_reply += "\n\nPour une situation réelle, contactez immédiatement les services de secours locaux. Le parcours d’urgence de cette application est fictif."
+            assistant_reply = f"{reply}\n\nLimites : {limitations}"
         except RuntimeError as exc:
             assistant_reply = f"Je ne peux pas joindre le service pour le moment. {exc}"
-        st.session_state["chat_history"].append({"role": "assistant", "text": assistant_reply})
+            data = {}
+        st.session_state["chat_history"].append(
+            {"role": "assistant", "text": assistant_reply, "sources": data.get("sources", [])}
+        )
         st.rerun()
 
 with sources_tab:

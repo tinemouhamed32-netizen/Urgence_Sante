@@ -26,11 +26,38 @@ def test_emergency_session_and_answer() -> None:
     assert "protocole validé" not in answer.json()["guidance"].lower()
 
 
-def test_assistant_emergency_response_does_not_claim_to_triage() -> None:
+def test_assistant_escalates_unconscious_patient_with_first_aid_sources() -> None:
+    response = client.post(
+        "/api/v1/assistant/message",
+        json={"question": "Un patient est inconscient que dois-je faire ?", "country": "SN", "language": "fr"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["category"] == "emergency"
+    assert "appelle immédiatement le samu" in payload["answer"].lower()
+    assert "respire normalement" in payload["answer"].lower()
+    assert "n'attends pas une réponse de l'application" in " ".join(payload["limitations"]).lower()
+    assert any("sja.org.uk/first-aid-advice/cpr/" in source for source in payload["sources"])
+    assert any("samu.sn/contact" in source for source in payload["sources"])
+
+
+def test_assistant_escalates_common_unconsciousness_phrasings() -> None:
+    response = client.post(
+        "/api/v1/assistant/message",
+        json={"question": "Il ne se réveille pas et ne répond pas", "country": "SN", "language": "fr"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["category"] == "emergency"
+    assert "appelle immédiatement le samu" in response.json()["answer"].lower()
+
+
+def test_assistant_other_emergencies_direct_to_local_services() -> None:
     response = client.post(
         "/api/v1/assistant/message",
         json={"question": "C'est une urgence réelle", "country": "SN", "language": "fr"},
     )
     assert response.status_code == 200
-    assert "ne réalise pas de triage médical" in response.json()["answer"].lower()
-    assert "services de secours locaux" in response.json()["answer"].lower()
+    assert "appelle immédiatement" in response.json()["answer"].lower()
+    assert "ne doit pas retarder l'appel aux secours" in response.json()["answer"].lower()

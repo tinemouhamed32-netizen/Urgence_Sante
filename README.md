@@ -121,3 +121,13 @@ curl -X POST http://127.0.0.1:8000/api/v1/assistant/message -H "Content-Type: ap
 - Les scénarios sont fictifs et destinés à la démonstration.
 - Les protocoles ne remplacent pas une validation médicale professionnelle.
 - Les données de santé ne doivent pas être utilisées directement pour un traitement réel.
+
+## État et évolution de l'assistant
+
+- L'assistant actuel n'utilise pas de modèle génératif : il applique des règles de mots-clés et recherche dans deux fiches de démonstration SQLite. La recherche accepte des termes et quelques formulations équivalentes, mais ne comprend pas le langage comme un modèle entraîné.
+- Il ne conserve ni ne transmet l'historique de conversation au backend. Les réponses restent des extraits du corpus; aucune réponse médicale personnalisée n'est générée.
+- Les fiches intégrées sont des exemples de démonstration, pas des recommandations médicales vérifiées pour un usage réel. Leurs métadonnées de source et de validation ne remplacent pas une vérification professionnelle et à jour.
+- Aucun entraînement ou fine-tuning n'a été réalisé. Ce n'est pas justifié sans modèle de départ et jeu de données médicales validé et autorisé.
+- Un RAG n'est pas encore pertinent avec ce corpus minuscule et démonstratif. Avant d'en ajouter un, constituer un corpus contrôlé de sources officielles à jour, conserver leurs références et faire valider les contenus par des professionnels compétents.
+- Les tests de recherche vérifient les paraphrases courantes et l'absence de résultat hors corpus; ils ne constituent pas une évaluation clinique. L'application ne doit pas être utilisée pour diagnostiquer, traiter ou trier des urgences.
+- Pour les formulations évoquant une personne inconsciente ou qui ne répond pas, l'assistant donne des consignes générales de premiers secours et recommande d'appeler immédiatement le SAMU/les secours locaux. Les réponses fournissent des liens vers St John Ambulance et le site du SAMU National du Sénégal; le prototype n'affiche pas de numéro d'urgence non vérifié.
